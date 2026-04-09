@@ -91,14 +91,16 @@ def force_subscribe(message):
         f"ثم اضغط على زر 'تحقق من الاشتراك'", 
         reply_markup=markup, parse_mode='HTML')
 
-# ====================== Keep Alive ======================
+# ====================== Keep Alive (محسن) ======================
 def keep_alive():
+    print("✅ Keep Alive Thread بدأ العمل")
     while True:
         try:
-            bot.send_message(ADMIN_ID, "🔄 Keep Alive: البوت يعمل...", disable_notification=True)
+            bot.get_me()
             print(f"✅ Keep Alive - {datetime.datetime.now().strftime('%H:%M:%S')}")
-        except:
-            pass
+        except Exception as e:
+            if int(time.time()) % 300 == 0:
+                print(f"⚠️ Keep Alive Warning: {e}")
         time.sleep(30)
 
 # ====================== دوال النظام ======================
@@ -279,7 +281,6 @@ def callback_handler(call):
     user_id = call.from_user.id
     data = call.data
 
-    # التحقق من الاشتراك
     if not is_subscribed(user_id):
         bot.answer_callback_query(call.id, "⚠️ يجب الاشتراك في القناة أولاً", show_alert=True)
         force_subscribe(call.message)
@@ -405,11 +406,10 @@ def callback_handler(call):
     elif data == "main_menu":
         show_main_menu(call.message.chat.id)
 
-    # ====================== زر لوحة الأدمن ======================
+    # ====================== لوحة الأدمن ======================
     elif data == "admin_panel" and user_id == ADMIN_ID:
         admin_panel(call.message)
 
-    # ====================== أزرار لوحة الأدمن ======================
     elif data == "admin_create_key" and user_id == ADMIN_ID:
         msg = bot.send_message(call.message.chat.id, "أدخل مدة المفتاح بالأيام:")
         bot.register_next_step_handler(msg, process_duration)
@@ -446,7 +446,7 @@ def callback_handler(call):
         msg = bot.send_message(call.message.chat.id, "أرسل الرسالة للبث للكل:")
         bot.register_next_step_handler(msg, process_broadcast)
 
-# ====================== دالة لوحة الأدمن ======================
+# ====================== دالة عرض لوحة الأدمن ======================
 def admin_panel(message):
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton("➕ إنشاء مفتاح جديد", callback_data="admin_create_key"))
